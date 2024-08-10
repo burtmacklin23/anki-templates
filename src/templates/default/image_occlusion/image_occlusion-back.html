@@ -1,0 +1,128 @@
+<!-- Prettify by @pranavdeshai: Cloze (front)
+
+Version: 0.1.3
+Readme: https://github.com/pranavdeshai/anki-prettify
+Links:
+- Reddit: https://www.reddit.com/user/Various_Breadfruit48
+- GitHub: https://github.com/pranavdeshai
+- Buy Me a Coffee: https://www.buymeacoffee.com/pranavdeshai
+- Ko-fi: https://ko-fi.com/pranavdeshai
+
+-->
+<style>
+  #io-header {
+    text-align: center;
+  }
+  .prettify-button {
+    text-align: center;
+  }
+  button,
+  .isMac button {
+    color: var(--tag-fg);
+    margin: 0.5em;
+    color: var(--text-fg);
+    border-radius: 0.2em;
+    box-shadow: none;
+    border: 1px solid var(--card-border);
+    border-bottom-color: var(--card-border);
+    font-size: var(--font-size-small);
+    font-family: inherit;
+    transition: all 0.25s;
+    &:active,
+    &:hover {
+      background: none;
+      background-color: var(--tag-bg-active);
+      color: var(--tag-fg-active);
+      cursor: pointer;
+    }
+    background: none;
+    background-color: var(--tag-bg);
+  }
+  #image-occlusion-canvas {
+    --inactive-shape-color: #ffeba2;
+    --active-shape-color: #ff8e8e;
+    --inactive-shape-border: 1px #212121;
+    --active-shape-border: 1px #212121;
+    --highlight-shape-color: #ff8e8e00;
+    --highlight-shape-border: 1px #ff8e8e;
+  }
+  #image-occlusion-container {
+    margin-block: 1em;
+  }
+  #image-occlusion-container img {
+    border-radius: 0;
+    margin: 0;
+    max-width: unset !important;
+    transition: none;
+    filter: none;
+    opacity: 100%;
+  }
+</style>
+<div style="display: none">{{cloze:Occlusion}}</div>
+<div class="prettify-flashcard">
+  <div class="prettify-deck">{{Deck}}</div>
+  <div class="prettify-field prettify-field--front">
+    <div id="err"></div>
+    {{#Header}}
+    <div id="io-header">{{Header}}</div>
+    {{/Header}}
+    <div id="image-occlusion-container">
+      {{Image}}
+      <canvas id="image-occlusion-canvas"></canvas>
+    </div>
+  </div>
+  <div class="prettify-button">
+    <button id="toggle" class="io-revl-btn">Toggle Masks</button>
+  </div>
+  {{#Back Extra}}
+  <div class="prettify-field prettify-field--back">{{Back Extra}}</div>
+  {{/Back Extra}} {{#Tags}}
+  <div class="prettify-tags">{{clickable:Tags}}</div>
+  {{/Tags}}
+</div>
+<script>
+  try {
+    anki.imageOcclusion.setup();
+  } catch (exc) {
+    document.getElementById("err").innerHTML =
+      `Error loading image occlusion. Is your Anki version up to date?<br><br>${exc}`;
+  }
+</script>
+<script>
+  // Split hierarchical tags
+  var tagsContainerEl = document.querySelectorAll(".prettify-tags > *");
+  if (tagsContainerEl.length > 0) {
+    var tags = [];
+    tagsContainerEl.forEach((tagEl) => {
+      tagEl.classList.add("prettify-tag");
+      tags.push(tagEl.innerHTML);
+      tags.forEach((tag) => {
+        var childTag = tag.split("::").filter(Boolean);
+        tagEl.innerHTML = childTag[childTag.length - 1].trim();
+      });
+    });
+  } else {
+    tagsContainerEl = document.querySelector(".prettify-tags");
+    var tags = tagsContainerEl.innerHTML.split(" ").filter(Boolean);
+    var html = "";
+    tags.forEach((tag) => {
+      var childTag = tag.split("::").filter(Boolean);
+      html +=
+        "<span class='prettify-tag'>" +
+        childTag[childTag.length - 1] +
+        "</span>";
+    });
+    tagsContainerEl.innerHTML = html;
+  }
+</script>
+
+<script>
+  // Breadcrumbs to current deck
+  var deckEl = document.querySelector(".prettify-deck");
+  var subDecks = deckEl.innerHTML.split("::").filter(Boolean);
+  html = [];
+  subDecks.forEach((subDeck) => {
+    html.push("<span class='prettify-subdeck'>" + subDeck + "</span>");
+  });
+  deckEl.innerHTML = html.join("&nbsp;/&nbsp;");
+</script>
